@@ -1,0 +1,570 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SwaMedia</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    <style>
+        .no-scrollbar::-webkit-scrollbar { display: none; }
+        .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+        .fade-in { animation: fadeIn 0.5s ease-in-out; }
+        @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+        .page { display: none; }
+        .page.active { display: block; }
+
+        .marquee { overflow: hidden; position: relative; white-space: nowrap; }
+        .marquee-content { display: inline-block; animation: marquee 45s linear infinite; will-change: transform; }
+        @keyframes marquee { from { transform: translateX(0%); } to { transform: translateX(-50%); } }
+        .marquee-content:hover { animation-play-state: paused; }
+        
+        .home-tab { color: #9ca3af; }
+        .home-tab:hover { color: #ef4444; }
+
+        .marquee-vertical { overflow: hidden; position: relative; flex-grow: 1; }
+        .marquee-content-vertical { display: block; position: absolute; width: 100%; animation: marquee-vertical 180s linear infinite; will-change: transform; }
+        @keyframes marquee-vertical { from { transform: translateY(0); } to { transform: translateY(-50%); } }
+        .marquee-vertical:hover .marquee-content-vertical { animation-play-state: paused; }
+        
+        /* Sidebar Styles */
+        #sidebar {
+            transition: transform 0.3s ease-in-out;
+            transform: translateX(100%);
+        }
+        #sidebar.open {
+            transform: translateX(0);
+        }
+        #sidebar-overlay {
+            transition: opacity 0.3s ease-in-out;
+        }
+    </style>
+</head>
+<body class="bg-black text-white font-sans">
+
+    <!-- Sidebar -->
+    <div id="sidebar-overlay" class="fixed inset-0 bg-black/50 z-40 hidden"></div>
+    <div id="sidebar" class="fixed top-0 right-0 h-full w-64 bg-gray-900 shadow-lg z-50 p-6">
+        <button id="closeSidebar" class="absolute top-4 right-4 text-2xl text-gray-400 hover:text-white">&times;</button>
+        <h2 class="text-xl font-bold text-red-500 mb-8">Menu</h2>
+        <nav class="flex flex-col space-y-4">
+            <a href="#" class="text-gray-300 hover:text-red-500 transition-colors"><i class="fas fa-file-shield w-6 mr-2"></i> Disclaimer</a>
+            <a href="#" class="text-gray-300 hover:text-red-500 transition-colors"><i class="fas fa-question-circle w-6 mr-2"></i> Help</a>
+            <a href="#" class="text-gray-300 hover:text-red-500 transition-colors"><i class="fas fa-user-secret w-6 mr-2"></i> Privacy Policy</a>
+            <a href="#" class="text-gray-300 hover:text-red-500 transition-colors"><i class="fas fa-envelope w-6 mr-2"></i> Contact Us</a>
+        </nav>
+    </div>
+
+    <main id="app-content" class="pb-20">
+        <!-- Home Page -->
+        <div id="homePage" class="page active fade-in">
+             <div class="p-4">
+                <div class="flex justify-between items-center mb-4">
+                    <h1 class="text-3xl font-bold text-red-500">SwaMedia</h1>
+                    <button id="openSidebar" class="text-2xl text-gray-400 hover:text-white">
+                        <i class="fas fa-bars"></i>
+                    </button>
+                </div>
+                 <!-- Home Tabs -->
+                <div class="flex border-b border-gray-700 mb-4">
+                    <button id="tvShowsTab" class="home-tab flex-1 py-2 text-lg font-semibold border-b-2 border-transparent transition">TV Shows</button>
+                    <button id="moviesTab" class="home-tab flex-1 py-2 text-lg font-semibold border-b-2 border-transparent transition">Movies</button>
+                </div>
+            </div>
+
+            <!-- Banner Carousel -->
+            <div class="relative w-full h-48 md:h-64 rounded-lg overflow-hidden mb-8 shadow-lg shadow-red-500/20 mx-auto px-4">
+                <div id="bannerCarousel" class="w-full h-full flex transition-transform duration-500 ease-in-out">
+                    <!-- Banners will be injected here -->
+                </div>
+                <div id="bannerDots" class="absolute bottom-2 left-1/2 -translate-x-1/2 flex space-x-2">
+                    <!-- Dots will be injected here -->
+                </div>
+            </div>
+            
+            <div class="px-4">
+                <!-- New Releases Scroller -->
+                <div class="mb-8">
+                    <h2 class="text-xl font-bold mb-3">New Releases</h2>
+                    <div id="newReleasesScroller" class="marquee">
+                        <!-- New releases will be injected here -->
+                    </div>
+                </div>
+
+                <!-- Content Carousels by Category -->
+                <div id="contentCarousels" class="space-y-8">
+                    <!-- Carousels will be injected here -->
+                </div>
+            </div>
+        </div>
+
+        <!-- Search Page -->
+        <div id="searchPage" class="page fade-in p-4">
+            <div class="relative mb-6">
+                <input type="text" id="searchInput" class="w-full bg-gray-900 border border-gray-700 rounded-full py-3 px-6 pl-12 text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-red-500" placeholder="Search for movies & tv shows...">
+                <i class="fa-solid fa-search absolute left-4 top-1/2 -translate-y-1/2 text-gray-400"></i>
+            </div>
+            <div id="searchResults" class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4">
+                <!-- Search results will be injected here -->
+            </div>
+             <p id="noResults" class="text-center text-gray-400 mt-8 hidden">No results found.</p>
+        </div>
+
+        <!-- Categories Page -->
+        <div id="categoriesPage" class="page fade-in">
+            <h2 class="text-2xl font-bold mb-4 px-4 pt-4">Categories</h2>
+            <div id="categoriesNavBar" class="px-4 pb-4 border-b border-gray-800 overflow-x-auto no-scrollbar">
+                <div id="categoriesNavContent" class="flex space-x-3 whitespace-nowrap">
+                    <!-- Category buttons will be injected here -->
+                </div>
+            </div>
+            <div id="categoryContentDisplay" class="p-4 grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4">
+                <!-- Content for the selected category will be injected here -->
+            </div>
+        </div>
+
+        <!-- Profile / Auth Page -->
+        <div id="profilePage" class="page fade-in p-6 max-w-md mx-auto">
+            <!-- Logged Out View -->
+            <div id="authView">
+                <div id="loginView">
+                    <h2 class="text-3xl font-bold text-center mb-6">Login</h2>
+                    <form id="loginForm" class="space-y-4">
+                        <input type="email" id="loginEmail" class="w-full bg-gray-900 border border-gray-700 rounded-lg p-3 focus:outline-none focus:ring-2 focus:ring-red-500" placeholder="Email" required>
+                        <input type="password" id="loginPassword" class="w-full bg-gray-900 border border-gray-700 rounded-lg p-3 focus:outline-none focus:ring-2 focus:ring-red-500" placeholder="Password" required>
+                        <button type="submit" class="w-full bg-red-600 hover:bg-red-700 rounded-lg p-3 font-bold transition-colors">Login</button>
+                    </form>
+                    <p class="text-center mt-4 text-gray-400">Don't have an account? <a href="#" id="showRegister" class="text-red-500 hover:underline">Sign Up</a></p>
+                </div>
+                <div id="registerView" class="hidden">
+                    <h2 class="text-3xl font-bold text-center mb-6">Sign Up</h2>
+                    <form id="registerForm" class="space-y-4">
+                        <input type="email" id="registerEmail" class="w-full bg-gray-900 border border-gray-700 rounded-lg p-3 focus:outline-none focus:ring-2 focus:ring-red-500" placeholder="Email" required>
+                        <input type="password" id="registerPassword" class="w-full bg-gray-900 border border-gray-700 rounded-lg p-3 focus:outline-none focus:ring-2 focus:ring-red-500" placeholder="Password" required>
+                        <button type="submit" class="w-full bg-red-600 hover:bg-red-700 rounded-lg p-3 font-bold transition-colors">Sign Up</button>
+                    </form>
+                    <p class="text-center mt-4 text-gray-400">Already have an account? <a href="#" id="showLogin" class="text-red-500 hover:underline">Login</a></p>
+                </div>
+                <p id="authError" class="text-red-500 text-center mt-4"></p>
+            </div>
+            <!-- Logged In View -->
+            <div id="profileView" class="hidden text-center">
+                 <i class="fa-solid fa-user-circle text-6xl text-red-500 mb-4"></i>
+                <h2 class="text-2xl font-bold mb-2">Welcome!</h2>
+                <p id="userEmail" class="text-gray-400 mb-6"></p>
+                <button id="logoutButton" class="w-full bg-red-600 hover:bg-red-700 rounded-lg p-3 font-bold transition-colors">Logout</button>
+            </div>
+        </div>
+
+        <!-- Movie Details Page -->
+        <div id="movieDetailsPage" class="page fade-in">
+             <!-- Movie Details will be injected here -->
+        </div>
+
+        <!-- TV Show Details Page -->
+        <div id="tvShowDetailsPage" class="page fade-in">
+             <!-- TV Show Details will be injected here -->
+        </div>
+
+        <!-- All Movies Page -->
+        <div id="allMoviesPage" class="page fade-in p-4 flex flex-col h-[calc(100vh-5rem)]">
+            <div class="flex items-center mb-6 flex-shrink-0">
+                <button class="home-back-btn mr-4 text-xl"><i class="fas fa-arrow-left"></i></button>
+                <h2 class="text-2xl font-bold">All Movies</h2>
+            </div>
+            <div class="marquee-vertical">
+                <div id="allMoviesGridMarqueeContent" class="marquee-content-vertical">
+                    <!-- All movies will be injected here -->
+                </div>
+            </div>
+        </div>
+
+        <!-- All TV Shows Page -->
+        <div id="allTvShowsPage" class="page fade-in p-4 flex flex-col h-[calc(100vh-5rem)]">
+            <div class="flex items-center mb-6 flex-shrink-0">
+                <button class="home-back-btn mr-4 text-xl"><i class="fas fa-arrow-left"></i></button>
+                <h2 class="text-2xl font-bold">All TV Shows</h2>
+            </div>
+            <div class="marquee-vertical">
+                <div id="allTvShowsGridMarqueeContent" class="marquee-content-vertical">
+                    <!-- All TV shows will be injected here -->
+                </div>
+            </div>
+        </div>
+
+    </main>
+
+    <!-- Bottom Navigation -->
+    <nav class="fixed bottom-0 left-0 right-0 bg-black/80 backdrop-blur-sm shadow-[0_-1px_10px_rgba(0,0,0,0.2)]">
+        <div id="nav-bar" class="flex justify-around max-w-xl mx-auto">
+            <button data-page="homePage" class="nav-btn flex-1 p-3 text-center text-red-500">
+                <i class="fas fa-home text-xl"></i>
+                <span class="block text-xs font-medium">Home</span>
+            </button>
+            <button data-page="searchPage" class="nav-btn flex-1 p-3 text-center text-gray-400">
+                <i class="fas fa-search text-xl"></i>
+                <span class="block text-xs font-medium">Search</span>
+            </button>
+            <button data-page="categoriesPage" class="nav-btn flex-1 p-3 text-center text-gray-400">
+                <i class="fas fa-th-large text-xl"></i>
+                <span class="block text-xs font-medium">Categories</span>
+            </button>
+            <button data-page="profilePage" class="nav-btn flex-1 p-3 text-center text-gray-400">
+                <i class="fas fa-user text-xl"></i>
+                <span class="block text-xs font-medium">Profile</span>
+            </button>
+        </div>
+    </nav>
+
+    <!-- Firebase SDK -->
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/9.15.0/firebase-app.js";
+        import { getDatabase, ref, onValue, get } from "https://www.gstatic.com/firebasejs/9.15.0/firebase-database.js";
+        import { getAuth, createUserWithEmailAndPassword, signInWithEmailAndPassword, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/9.15.0/firebase-auth.js";
+        
+        const firebaseConfig = {
+            apiKey: "YOUR_API_KEY",
+            authDomain: "YOUR_AUTH_DOMAIN",
+            databaseURL: "https://<YOUR-PROJECT-ID>.firebaseio.com",
+            projectId: "YOUR_PROJECT_ID",
+            storageBucket: "YOUR_STORAGE_BUCKET",
+            messagingSenderId: "YOUR_MESSAGING_SENDER_ID",
+            appId: "YOUR_APP_ID"
+        };
+        
+        function initializeAppAndRun() {
+            try {
+                const app = initializeApp(firebaseConfig);
+                const db = getDatabase(app);
+                const auth = getAuth(app);
+                runApp(db, auth);
+            } catch (error) {
+                console.error("Firebase initialization failed:", error);
+                document.body.innerHTML = `<div class="flex items-center justify-center h-screen bg-black text-white"><div class="text-center"><h1 class="text-2xl text-red-500">Firebase Configuration Error</h1><p class="mt-2 text-gray-400">Please check your Firebase configuration in index.html.</p><p class="mt-1 text-sm text-gray-500">${error.message}</p></div></div>`;
+            }
+        }
+        
+        function runApp(db, auth) {
+            let bannerInterval;
+            let allMovies = [];
+            let allTvShows = [];
+            let allContent = [];
+            let currentUser = null;
+            let navigationHistory = ['homePage'];
+
+            const pages = document.querySelectorAll('.page');
+            const navButtons = document.querySelectorAll('.nav-btn');
+            const appContent = document.getElementById('app-content');
+            
+            // --- SIDEBAR ---
+            const sidebar = document.getElementById('sidebar');
+            const sidebarOverlay = document.getElementById('sidebar-overlay');
+            const openSidebarBtn = document.getElementById('openSidebar');
+            const closeSidebarBtn = document.getElementById('closeSidebar');
+
+            const toggleSidebar = () => {
+                sidebar.classList.toggle('open');
+                sidebarOverlay.classList.toggle('hidden');
+            };
+
+            openSidebarBtn.addEventListener('click', toggleSidebar);
+            closeSidebarBtn.addEventListener('click', toggleSidebar);
+            sidebarOverlay.addEventListener('click', toggleSidebar);
+
+            const showPage = (pageId) => {
+                if (!pageId) return;
+                pages.forEach(page => page.classList.toggle('active', page.id === pageId));
+                navButtons.forEach(btn => {
+                    const isHomePageRelated = ['homePage'].includes(pageId);
+                    if (btn.dataset.page === 'homePage') {
+                        btn.classList.toggle('text-red-500', isHomePageRelated);
+                        btn.classList.toggle('text-gray-400', !isHomePageRelated);
+                    } else {
+                        btn.classList.toggle('text-red-500', btn.dataset.page === pageId);
+                        btn.classList.toggle('text-gray-400', btn.dataset.page !== pageId);
+                    }
+                });
+                appContent.scrollTop = 0;
+            };
+
+            const navigateTo = (pageId) => {
+                const currentPageId = navigationHistory[navigationHistory.length - 1];
+                if (pageId !== currentPageId) {
+                    navigationHistory.push(pageId);
+                }
+                showPage(pageId);
+            };
+
+            const navigateBack = () => {
+                if (navigationHistory.length > 1) {
+                    navigationHistory.pop();
+                    const previousPageId = navigationHistory[navigationHistory.length - 1];
+                    showPage(previousPageId);
+                } else {
+                    showPage('homePage'); // Fallback to home if history is empty or has one item
+                }
+            };
+            
+            document.getElementById('nav-bar').addEventListener('click', (e) => {
+                const navBtn = e.target.closest('.nav-btn');
+                if (navBtn) {
+                    const pageId = navBtn.dataset.page;
+                    navigationHistory = [pageId]; // Reset history for main tab navigation
+                    showPage(pageId);
+                }
+            });
+
+            // --- AUTHENTICATION ---
+            onAuthStateChanged(auth, user => {
+                currentUser = user;
+                const authView = document.getElementById('authView');
+                const profileView = document.getElementById('profileView');
+                if (user) {
+                    authView.style.display = 'none';
+                    profileView.style.display = 'block';
+                    document.getElementById('userEmail').textContent = user.email;
+                } else {
+                    authView.style.display = 'block';
+                    profileView.style.display = 'none';
+                    document.getElementById('userEmail').textContent = '';
+                }
+            });
+
+            const authError = document.getElementById('authError');
+            document.getElementById('loginForm').addEventListener('submit', (e) => { e.preventDefault(); signInWithEmailAndPassword(auth, loginEmail.value, loginPassword.value).catch(error => { authError.textContent = error.message; }); });
+            document.getElementById('registerForm').addEventListener('submit', (e) => { e.preventDefault(); createUserWithEmailAndPassword(auth, registerEmail.value, registerPassword.value).catch(error => { authError.textContent = error.message; }); });
+            document.getElementById('logoutButton').addEventListener('click', () => signOut(auth));
+            document.getElementById('showRegister').addEventListener('click', (e) => { e.preventDefault(); loginView.classList.add('hidden'); registerView.classList.remove('hidden'); });
+            document.getElementById('showLogin').addEventListener('click', (e) => { e.preventDefault(); registerView.classList.add('hidden'); loginView.classList.remove('hidden'); });
+
+            // --- UI HELPERS ---
+            const createContentCard = (item, type) => `
+                <div class="bg-gray-900 rounded-lg overflow-hidden transform hover:-translate-y-1 transition-transform duration-300 shadow-lg" data-id="${item.id}" data-type="${type}">
+                    <img src="${item.posterUrl || 'https://picsum.photos/200/300'}" alt="${item.title}" class="aspect-[2/3] w-full object-cover cursor-pointer">
+                    <div class="p-2"><h3 class="text-sm font-semibold truncate text-white">${item.title}</h3><p class="text-xs text-gray-400">${item.year || ''}</p></div>
+                </div>`;
+
+            // --- HOME PAGE & NAVIGATION TABS ---
+            document.getElementById('tvShowsTab').addEventListener('click', () => showAllTvShows());
+            document.getElementById('moviesTab').addEventListener('click', () => showAllMovies());
+
+            const loadBanners = () => {
+                onValue(ref(db, 'banners/'), (snapshot) => {
+                    const data = snapshot.val();
+                    const bannerCarousel = document.getElementById('bannerCarousel');
+                    const bannerDots = document.getElementById('bannerDots');
+                    if (!data || !bannerCarousel || !bannerDots) { if (bannerCarousel) bannerCarousel.innerHTML = ''; if (bannerDots) bannerDots.innerHTML = ''; return; };
+                    bannerCarousel.innerHTML = ''; bannerDots.innerHTML = '';
+                    const banners = Object.values(data);
+                    banners.forEach((banner, index) => { if (banner && banner.imageUrl) { bannerCarousel.innerHTML += `<div class="w-full h-full flex-shrink-0"><img src="${banner.imageUrl}" class="w-full h-full object-cover"></div>`; bannerDots.innerHTML += `<div class="w-2 h-2 rounded-full cursor-pointer transition-colors ${index === 0 ? 'bg-red-500' : 'bg-gray-400'}" data-index="${index}"></div>`; } });
+                    if (banners.length > 1) setupBannerCarousel(banners.length);
+                });
+            };
+
+            const setupBannerCarousel = (count) => {
+                clearInterval(bannerInterval); let currentIndex = 0;
+                const bannerCarousel = document.getElementById('bannerCarousel'), bannerDots = document.getElementById('bannerDots');
+                const updateCarousel = () => { if (bannerCarousel) bannerCarousel.style.transform = `translateX(-${currentIndex * 100}%)`; if (bannerDots) bannerDots.childNodes.forEach((dot, i) => { dot.classList.toggle('bg-red-500', i === currentIndex); dot.classList.toggle('bg-gray-400', i !== currentIndex); }); };
+                bannerInterval = setInterval(() => { currentIndex = (currentIndex + 1) % count; updateCarousel(); }, 4000);
+                if (bannerDots) bannerDots.addEventListener('click', (e) => { if (e.target.dataset.index) { currentIndex = parseInt(e.target.dataset.index); updateCarousel(); } });
+            };
+
+            const renderHomeContent = async () => {
+                const carouselsContainer = document.getElementById('contentCarousels');
+                if (!carouselsContainer) return;
+                try {
+                    const categoriesSnapshot = await get(ref(db, 'categories'));
+                    if (!categoriesSnapshot.exists()) { carouselsContainer.innerHTML = '<p class="px-4">No content available.</p>'; renderNewReleases(); return; }
+                    const categories = categoriesSnapshot.val();
+                    carouselsContainer.innerHTML = '';
+
+                    // Movies Section
+                    carouselsContainer.innerHTML += `<h2 class="text-2xl font-bold mb-4 text-red-500">Movies</h2>`;
+                    let hasMovies = false;
+                    for (const catId in categories) {
+                        const moviesInCategory = allMovies.filter(item => item.categoryId === catId);
+                        if (moviesInCategory.length > 0) { hasMovies = true; carouselsContainer.innerHTML += `<div><h3 class="text-xl font-bold mb-3">${categories[catId].name}</h3><div class="flex overflow-x-auto space-x-4 pb-4 no-scrollbar">${moviesInCategory.map(item => `<div class="flex-shrink-0 w-32" data-id="${item.id}" data-type="movies"><img src="${item.posterUrl||''}" alt="${item.title}" class="rounded-lg h-48 w-full object-cover cursor-pointer hover:scale-105 transition-transform"><h3 class="text-sm font-semibold mt-2 truncate">${item.title}</h3></div>`).join('')}</div></div>`; }
+                    }
+                    if(!hasMovies) carouselsContainer.innerHTML += '<p class="text-gray-400">No movies available yet.</p>';
+
+                    // TV Shows Section
+                    carouselsContainer.innerHTML += `<h2 class="text-2xl font-bold mt-8 mb-4 text-red-500">TV Shows</h2>`;
+                    let hasShows = false;
+                    for (const catId in categories) {
+                        const showsInCategory = allTvShows.filter(item => item.categoryId === catId);
+                        if (showsInCategory.length > 0) { hasShows = true; carouselsContainer.innerHTML += `<div><h3 class="text-xl font-bold mb-3">${categories[catId].name}</h3><div class="flex overflow-x-auto space-x-4 pb-4 no-scrollbar">${showsInCategory.map(item => `<div class="flex-shrink-0 w-32" data-id="${item.id}" data-type="tvshows"><img src="${item.posterUrl||''}" alt="${item.title}" class="rounded-lg h-48 w-full object-cover cursor-pointer hover:scale-105 transition-transform"><h3 class="text-sm font-semibold mt-2 truncate">${item.title}</h3></div>`).join('')}</div></div>`; }
+                    }
+                     if(!hasShows) carouselsContainer.innerHTML += '<p class="text-gray-400">No TV shows available yet.</p>';
+
+                    renderNewReleases();
+                } catch (error) { console.error("Error loading carousels: ", error); carouselsContainer.innerHTML = '<p class="px-4">Error loading content.</p>'; }
+            };
+            
+            const renderNewReleases = () => {
+                const scrollerContainer = document.getElementById('newReleasesScroller');
+                if (!scrollerContainer) return;
+                const newItems = allContent.slice(-20).reverse();
+                const generateHTML = (item) => `<div class="inline-block w-32 mx-2 cursor-pointer" data-id="${item.id}" data-type="${item.type}"><img src="${item.posterUrl||''}" alt="${item.title}" class="rounded-lg h-48 w-full object-cover hover:scale-105 transition-transform"><h3 class="text-sm font-semibold mt-2 truncate">${item.title}</h3></div>`;
+                const contentHTML = newItems.map(generateHTML).join('');
+                scrollerContainer.innerHTML = contentHTML ? `<div class="marquee-content">${contentHTML}${contentHTML}</div>` : "";
+            };
+
+            // --- ALL CONTENT & DETAILS PAGES ---
+            const setupActionListeners = () => {
+                document.body.addEventListener('click', e => {
+                    const card = e.target.closest('[data-id][data-type]'), 
+                          backBtn = e.target.closest('.back-btn, .home-back-btn');
+                          
+                    if (card) { 
+                        const { id, type } = card.dataset; 
+                        if (type === 'movies') loadMovieDetails(id); 
+                        if (type === 'tvshows') loadTvShowDetails(id); 
+                    } 
+                    else if (backBtn) { 
+                        navigateBack(); 
+                    } 
+                });
+            };
+            
+            const showAllMovies = () => { 
+                const marqueeContent = document.getElementById('allMoviesGridMarqueeContent'); 
+                if(!marqueeContent) return; 
+                if (allMovies.length > 0) {
+                    const gridContentHTML = allMovies.map(item => createContentCard(item, 'movies')).join('');
+                    const gridWrapperHTML = `<div class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4 mb-4">${gridContentHTML}</div>`;
+                    marqueeContent.innerHTML = gridWrapperHTML + gridWrapperHTML;
+                } else {
+                    marqueeContent.innerHTML = '<p class="text-center">No movies found.</p>';
+                }
+                navigateTo('allMoviesPage'); 
+            };
+            const showAllTvShows = () => { 
+                const marqueeContent = document.getElementById('allTvShowsGridMarqueeContent'); 
+                if(!marqueeContent) return; 
+                if (allTvShows.length > 0) {
+                     const gridContentHTML = allTvShows.map(item => createContentCard(item, 'tvshows')).join('');
+                    const gridWrapperHTML = `<div class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4 mb-4">${gridContentHTML}</div>`;
+                    marqueeContent.innerHTML = gridWrapperHTML + gridWrapperHTML;
+                } else {
+                    marqueeContent.innerHTML = '<p class="text-center">No TV shows found.</p>';
+                }
+                navigateTo('allTvShowsPage'); 
+            };
+
+            const loadMovieDetails = async (movieId) => {
+                if (!movieId) return;
+                const detailsContainer = document.getElementById('movieDetailsPage');
+                navigateTo('movieDetailsPage');
+                try {
+                    const snapshot = await get(ref(db, `movies/${movieId}`));
+                    if (snapshot.exists()) {
+                        const movie = snapshot.val();
+                        detailsContainer.innerHTML = `<div class="relative h-64 md:h-80"><img src="${movie.posterUrl||''}" class="w-full h-full object-cover object-top absolute"><div class="absolute inset-0 bg-gradient-to-t from-black to-transparent"></div><button class="back-btn absolute top-4 left-4 bg-black/50 rounded-full h-10 w-10"><i class="fas fa-arrow-left"></i></button></div><div class="p-4 -mt-16 relative"><div class="flex items-end space-x-4"><img src="${movie.posterUrl||''}" class="w-28 h-40 rounded-lg object-cover shadow-lg -mt-8"><div><h1 class="text-2xl font-bold">${movie.title}</h1><p class="text-sm text-gray-400">${movie.year||'N/A'} &bull; <i class="fas fa-star text-yellow-400"></i> ${movie.rating||'N/A'}</p></div></div><a href="${movie.watchUrl||'#'}" target="_blank" class="block text-center bg-red-600 hover:bg-red-700 rounded-lg p-3 font-bold my-6"><i class="fas fa-play mr-2"></i> Watch Now</a><div><h3 class="font-bold text-lg">Description</h3><p class="text-gray-300 text-sm">${movie.description||'N/A'}</p></div></div>`;
+                    } else {
+                         detailsContainer.innerHTML = `<div class="flex justify-center items-center h-[80vh]"><p>Movie not found.</p></div>`;
+                    }
+                } catch (error) {
+                    console.error("Error fetching movie details:", error);
+                    detailsContainer.innerHTML = `<div class="flex justify-center items-center h-[80vh]"><p>Error loading details.</p></div>`;
+                }
+            };
+
+            const loadTvShowDetails = async (showId) => {
+                if (!showId) return;
+                const detailsContainer = document.getElementById('tvShowDetailsPage');
+                navigateTo('tvShowDetailsPage');
+                try {
+                    const snapshot = await get(ref(db, `tvshows/${showId}`));
+                    if (snapshot.exists()) {
+                        const show = snapshot.val();
+                        const seasons = show.seasons ? Object.keys(show.seasons).sort((a,b) => a-b) : [];
+                        detailsContainer.innerHTML = `<div class="relative h-64 md:h-80"><img src="${show.posterUrl||''}" class="w-full h-full object-cover object-top absolute"><div class="absolute inset-0 bg-gradient-to-t from-black to-transparent"></div><button class="back-btn absolute top-4 left-4 bg-black/50 rounded-full h-10 w-10"><i class="fas fa-arrow-left"></i></button></div><div class="p-4 -mt-16 relative"><div class="flex items-end space-x-4"><img src="${show.posterUrl||''}" class="w-28 h-40 rounded-lg object-cover shadow-lg -mt-8"><div><h1 class="text-2xl font-bold">${show.title}</h1><p class="text-sm text-gray-400">${show.year||'N/A'} &bull; <i class="fas fa-star text-yellow-400"></i> ${show.rating||'N/A'}</p></div></div><div class="mt-6"><h3 class="font-bold text-lg">Description</h3><p class="text-gray-300 text-sm">${show.description||'N/A'}</p></div><div class="mt-6"><select id="seasonSelector" class="w-full bg-gray-800 p-2 rounded">${seasons.map(s=>`<option value="${s}">Season ${s}</option>`).join('')}</select></div><div id="episodesList" class="mt-4 space-y-2"></div></div>`;
+                        const seasonSelector = detailsContainer.querySelector('#seasonSelector');
+                        const renderEpisodes = (sNum) => { const eps = show.seasons[sNum]?.episodes ? Object.values(show.seasons[sNum].episodes) : []; detailsContainer.querySelector('#episodesList').innerHTML = eps.map((ep, i) => `<a href="${ep.watchUrl||'#'}" target="_blank" class="flex items-center bg-gray-900 p-3 rounded-lg hover:bg-gray-800"><span class="text-red-500 font-bold mr-4">${i+1}</span><span class="flex-1">${ep.title}</span><i class="fas fa-play text-gray-400"></i></a>`).join(''); };
+                        if (seasons.length > 0) { renderEpisodes(seasonSelector.value); seasonSelector.addEventListener('change', (e) => renderEpisodes(e.target.value)); }
+                    } else {
+                        detailsContainer.innerHTML = `<div class="flex justify-center items-center h-[80vh]"><p>TV Show not found.</p></div>`;
+                    }
+                } catch (error) {
+                    console.error("Error fetching TV show details:", error);
+                    detailsContainer.innerHTML = `<div class="flex justify-center items-center h-[80vh]"><p>Error loading details.</p></div>`;
+                }
+            };
+            
+            // --- CATEGORIES PAGE ---
+            const categoriesNavContent = document.getElementById('categoriesNavContent');
+            const categoryContentDisplay = document.getElementById('categoryContentDisplay');
+
+            const showContentForSelectedCategory = (categoryId) => {
+                if (!categoryId || !categoryContentDisplay) return;
+                const contentInCategory = allContent.filter(item => item.categoryId === categoryId);
+                categoryContentDisplay.innerHTML = contentInCategory.length > 0 ? contentInCategory.map(item => createContentCard(item, item.type)).join('') : '<p class="col-span-full text-center text-gray-400">No content in this category.</p>';
+            };
+
+            const loadCategories = () => {
+                if (!categoriesNavContent) return;
+                onValue(ref(db, 'categories/'), (snapshot) => {
+                    const data = snapshot.val();
+                    if (!data) { categoriesNavContent.innerHTML = '<p class="text-gray-400">No categories found.</p>'; return; }
+                    
+                    categoriesNavContent.innerHTML = '';
+                    const categories = Object.entries(data);
+                    categories.forEach(([id, cat], i) => {
+                        if (cat && cat.name) {
+                            const button = document.createElement('button');
+                            button.className = `category-nav-btn px-4 py-2 rounded-full text-sm font-semibold transition-colors ${i === 0 ? 'bg-red-600 text-white' : 'bg-gray-800 text-gray-300 hover:bg-gray-700'}`;
+                            button.dataset.categoryId = id;
+                            button.textContent = cat.name;
+                            categoriesNavContent.appendChild(button);
+                        }
+                    });
+                    if (categories.length > 0) {
+                        showContentForSelectedCategory(categories[0][0]);
+                    } else {
+                        categoryContentDisplay.innerHTML = '';
+                    }
+                });
+            };
+
+            if (categoriesNavContent) {
+                categoriesNavContent.addEventListener('click', (e) => {
+                    const button = e.target.closest('.category-nav-btn');
+                    if (!button) return;
+
+                    categoriesNavContent.querySelectorAll('.category-nav-btn').forEach(btn => {
+                        btn.classList.remove('bg-red-600', 'text-white');
+                        btn.classList.add('bg-gray-800', 'text-gray-300', 'hover:bg-gray-700');
+                    });
+                    
+                    button.classList.add('bg-red-600', 'text-white');
+                    button.classList.remove('bg-gray-800', 'text-gray-300', 'hover:bg-gray-700');
+                    
+                    showContentForSelectedCategory(button.dataset.categoryId);
+                });
+            }
+
+            // --- SEARCH PAGE ---
+            const setupSearch = () => {
+                const searchInput = document.getElementById('searchInput'); const searchResults = document.getElementById('searchResults'); const noResults = document.getElementById('noResults');
+                if (!searchInput || !searchResults || !noResults) return;
+                searchInput.addEventListener('input', (e) => { const query = e.target.value.toLowerCase(); if (query.length < 2) { searchResults.innerHTML = ''; noResults.classList.add('hidden'); return; } const filtered = allContent.filter(item => item.title && item.title.toLowerCase().includes(query)); if (filtered.length > 0) { searchResults.innerHTML = filtered.map(item => createContentCard(item, item.type)).join(''); noResults.classList.add('hidden'); } else { searchResults.innerHTML = ''; noResults.classList.remove('hidden'); } });
+            };
+
+            // --- INITIAL LOAD ---
+            const initApp = async () => {
+                showPage('homePage');
+                try {
+                    const [moviesSnap, tvShowsSnap] = await Promise.all([get(ref(db, 'movies')), get(ref(db, 'tvshows'))]);
+                    allMovies = moviesSnap.exists() ? Object.entries(moviesSnap.val()).map(([id, d]) => ({ id, ...d, type: 'movies' })) : [];
+                    allTvShows = tvShowsSnap.exists() ? Object.entries(tvShowsSnap.val()).map(([id, d]) => ({ id, ...d, type: 'tvshows' })) : [];
+                    allContent = [...allMovies, ...allTvShows];
+                } catch (error) { console.error("Failed to fetch initial content:", error); }
+                loadBanners(); renderHomeContent(); setupSearch(); setupActionListeners(); loadCategories();
+            };
+            initApp();
+        }
+        initializeAppAndRun();
+    </script>
+</body>
+</html>
